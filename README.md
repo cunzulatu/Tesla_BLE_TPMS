@@ -20,14 +20,14 @@ This project allows you to monitor tire pressure, temperature, and battery level
 | Model | Compatibility | Protocol |
 | :--- | :--- | :--- |
 | **Model 3 / Model Y** | ✅ Supported | BLE (2.4GHz) |
-| **Model 3 Highland** | ✅ Supported | BLE (2.4GHz) |
+| **M3 2024+/ MY 2025+** | ✅ Supported | BLE (2.4GHz) |
 | **Model S / Model X** | ❌ Not Supported | 433 MHz (Legacy) |
 
 ## 🛠 Hardware & Setup
 - **Core:** Built for **ESP32 Arduino Core v3.3.8**.
 - **Tested Hardware:** ESP32-D0WD-V3 (v3.1), ESP32U, ESP32-C3, ESP32-S3.
 - **Partition Scheme:** If the sketch exceeds space or crashes, use **"Huge APP (3MB No OTA)"**.
-- **Serial Baudrate:** 115200
+- **Serial Monitor Baudrate:** 115200
 
 ## 🎮 Commands
 Open your Serial Monitor and type `help` to see the full list:
@@ -50,6 +50,7 @@ Open your Serial Monitor and type `help` to see the full list:
 ## 🔬 Technical Insight
 The decoding logic identifies the payload start at `0x2B 0x02`. The pressure is calculated using the following formula:
 $$P = \frac{(raw\_value - 100)}{7}$$
+Formulas for decoding are based to comparison to a professional TPMS reader, but cannot be accurate because of the few data collected during reverse engineering of this. Feel free to improve the code!
 
 ## 🤝 Contributing & Feedback
 This project is based on reverse engineering and might require fine-tuning for different sensor batches. Feel free to open an issue or submit a pull request!
