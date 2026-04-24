@@ -14,24 +14,23 @@ On the device i tested it successfully, Sketch uses 1118861 bytes (85%) of progr
 Enjoy! */
 #include <BLEDevice.h>
 #include <Preferences.h>
-
+//Config
 const char* VERSION = "0.3";
+bool isScanningActive = true; //Default ON
+bool isDebugActive = false; //Default OFF
+bool isFilterActive = true;  // Default ON
+const float PRESS_OFFSET = 100.0; //Calibration variable to calculate pressure
+const float PRESS_DIVISOR = 7.0; //Calibration variable to calculate pressure
+//Other variables
 Preferences preferences;
 unsigned int totalReadings = 0;
 unsigned int uniqueSensors = 0;
 String inputString = "";
-
 BLEScan* pBLEScan;
-bool isScanningActive = true;
-bool isDebugActive = false;
-bool isFilterActive = true;  // Default ON
 String targetMAC = "";
 unsigned long targetSearchStart = 0;
 bool targetFound = false;
-
-const float PRESS_OFFSET = 100.0;
-const float PRESS_DIVISOR = 7.0;
-const float PSI_TO_BAR = 0.0689476;
+const float PSI_TO_BAR = 0.0689476; //Psi to bar conversion
 
 
 String formatMAC(String raw) {
@@ -50,7 +49,7 @@ struct HelpDetail {
   const char* content;
 };
 
-// Tabella dei messaggi: Copiati esattamente dal tuo originale
+// Advanced help table
 const HelpDetail helpTable[] = {
   { "HELP", "\n--- <help> shows the list of available commands." },
   { "LIST", "\n--- <list> shows the list of MAC adresses in memory." },
@@ -65,14 +64,14 @@ const HelpDetail helpTable[] = {
 void printHelp(String subCmd = "") {
   subCmd.toUpperCase();
 
-  // Gestione comando vuoto (Lista comandi principale)
+  // If no sub-param, show command list.
   if (subCmd == "") {
     Serial.println("Commands: help, list, scan <p>, debug <p>, filter <p>, reset <p>, uptime, about");
     Serial.println("Advanced: help <command>");
     return;
   }
 
-  // Ricerca dinamica del comando
+  // If param, search param in the table
   for (const auto& entry : helpTable) {
     if (subCmd == entry.command) {
       Serial.println(entry.content);
@@ -80,7 +79,7 @@ void printHelp(String subCmd = "") {
     }
   }
 
-  // Messaggio di errore (Default)
+  // If param is not a command, return error
   Serial.printf("No detailed help for '%s'.\n", subCmd.c_str());
 }
 
@@ -95,10 +94,10 @@ class MyCallbacks : public BLEAdvertisedDeviceCallbacks {
 
     bool isTesla = (name.indexOf("tsTPMS") != -1);
 
-    // SE IL FILTRO È ATTIVO E NON È TESLA, ESCI
+    // If filter is on and the device is not a tesla tpms, stop here.
     if (isFilterActive && !isTesla) return;
 
-    // SE IL FILTRO È OFF E NON È TESLA, STAMPA SOLO MAC E PAYLOAD
+    // If filter is off and device is not tesla, print mac rssi and raw payload.
     if (!isFilterActive && !isTesla) {
       Serial.printf("[BLE] MAC: %s | RSSI: %d | Data: ", currentMAC.c_str(), advertisedDevice.getRSSI());
       uint8_t* p = advertisedDevice.getPayload();
@@ -109,7 +108,7 @@ class MyCallbacks : public BLEAdvertisedDeviceCallbacks {
       return;
     }
 
-    // LOGICA DEFAULT PER TPMS TESLA
+    // If we are scanning for a specific mac and we get a message from some device that's not our target, return.
     if (targetMAC != "" && currentMAC != targetMAC) return;
 
     uint8_t* payload = advertisedDevice.getPayload();
@@ -165,28 +164,6 @@ class MyCallbacks : public BLEAdvertisedDeviceCallbacks {
     }
   }
 };
-
-void setup() {
-  Serial.begin(115200);                              //Serial setup
-  preferences.begin("tpms-data", false);             //Flash memory setup
-  totalReadings = preferences.getUInt("count", 0);   //Retrieve readings from flash
-  uniqueSensors = preferences.getUInt("uCount", 0);  //Retrieve unique mac count from flash
-  //Welcome message
-  delay(1000);  //Wait for serial connection to estabilish properly
-  Serial.println("\n###########################");
-  Serial.printf("@ Tesla BLE TPMS Reader v%s\n", VERSION);
-  Serial.printf("@ Tot readings: %u\n", totalReadings);
-  Serial.printf("@ Unique MACs:  %u\n", uniqueSensors);
-  Serial.println("###########################");
-  //Bluetooth setup
-  BLEDevice::init("");
-  pBLEScan = BLEDevice::getScan();
-  pBLEScan->setAdvertisedDeviceCallbacks(new MyCallbacks(), false);
-  pBLEScan->setActiveScan(true);
-  pBLEScan->setInterval(150);
-  pBLEScan->setWindow(120);
-  pBLEScan->start(0, NULL, false);
-}
 
 void processCommand(String fullCmd) {
   fullCmd.trim();
@@ -247,8 +224,7 @@ void processCommand(String fullCmd) {
         isScanningActive = false;
         Serial.println("Scan STOPPED.");
       }
-    } else if (param.length() == 12) {
-      // Questa parte rimane invariata perché è un'azione specifica (cambio target)
+    } else if (param.length() == 12) { //If we search a specific MAC
       targetMAC = formatMAC(param);
       targetFound = false;
       targetSearchStart = millis();
@@ -283,11 +259,35 @@ void processCommand(String fullCmd) {
   } else Serial.printf("Unknown: '%s'! Type 'help'!\n", cmd.c_str());
 }
 
+void setup() {
+  Serial.begin(115200);                              //Serial setup
+  preferences.begin("tpms-data", false);             //Flash memory setup
+  totalReadings = preferences.getUInt("count", 0);   //Retrieve readings from flash
+  uniqueSensors = preferences.getUInt("uCount", 0);  //Retrieve unique mac count from flash
+  //Welcome message
+  delay(1000);  //Wait for serial connection to estabilish properly
+  Serial.println("\n###########################");
+  Serial.printf("@ Tesla BLE TPMS Reader v%s\n", VERSION);
+  Serial.printf("@ Tot readings: %u\n", totalReadings);
+  Serial.printf("@ Unique MACs:  %u\n", uniqueSensors);
+  Serial.println("###########################");
+  //Bluetooth setup
+  BLEDevice::init("");
+  pBLEScan = BLEDevice::getScan();
+  pBLEScan->setAdvertisedDeviceCallbacks(new MyCallbacks(), false);
+  pBLEScan->setActiveScan(true);
+  pBLEScan->setInterval(150);
+  pBLEScan->setWindow(120);
+  pBLEScan->start(0, NULL, false);
+}
+
 void loop() {
+  //If 15 seconds passed and target mac is not found, just reset to default and listen to everybody
   if (targetMAC != "" && (millis() - targetSearchStart > 15000)) {
     if (!targetFound) Serial.printf("\n[ERROR] Target %s not found.\n", targetMAC.c_str());
     targetMAC = "";
   }
+  //Process serial commands
   while (Serial.available() > 0) {
     char inChar = (char)Serial.read();
     if (inChar == '\n' || inChar == '\r') {
