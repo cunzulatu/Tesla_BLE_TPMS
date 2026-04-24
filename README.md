@@ -1,6 +1,7 @@
 # ESP32 Tesla_BLE_TPMS Reader v0.3
 ESP32 Tesla BLE TPMS v0.3 by Conny (c)2026
 This tool is made by reverse engineering Tesla's M3 and MY TPMS sensors BLE payloads to be read with any esp32 microcontroller via Serial Monitor. Could really be used with any microcontroller and BT module with little to no modifications.
+
 It can read both first-gen and highland m3 and my tpms. NO MS and MX (they're 433mhz).
 Accuracy is still to be perfectioned, the device works pretty fine tho.
 If the tire isn't inflated or is not moving with enough speed, the sensor will report very few to no data (try turning debug on).
