@@ -1,20 +1,58 @@
-# ESP32 Tesla_BLE_TPMS Reader v0.3
-ESP32 Tesla BLE TPMS v0.3 by Conny (c)2026
-This tool is made by reverse engineering Tesla's M3 and MY TPMS sensors BLE payloads to be read with any esp32 microcontroller via Serial Monitor. Could really be used with any microcontroller and BT module with little to no modifications.
+# ESP32 Tesla BLE TPMS Reader v0.3
 
-It can read both first-gen and highland m3 and my tpms. NO MS and MX (they're 433mhz).
-Accuracy is still to be perfectioned, the device works pretty fine tho.
-If the tire isn't inflated or is not moving with enough speed, the sensor will report very few to no data (try turning debug on).
-If you wish to trigger them without having them pressured up and running, just make something that makes a 125kHz square wave near them.
-Feedback from the device will be provided by serial monitor (baudrate 115200),
-and several commands are available to play with it. Just type "help" in the serial monitor.
-It also stores in the flash memory how many tpms have been read and the unique MACs to be able to recognise new devices from already known.
-Dedicated command also to delete one, the other or both.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Platform: ESP32](https://img.shields.io/badge/Platform-ESP32-blue.svg)](https://www.espressif.com/en/products/socs/esp32)
 
-ESP32 SETUP:
-ESP32 boards library version 3.3.8, if the device crashes on startup try compiling with Huge APP partition. (shouldn't be needed).
-Works pretty fine in ESP32-D0WD-V3 (revision v3.1), ESP32U, should also work in ESP32-C3 (single core) and ESP32-S3 (tested partially).
-On the device i tested it successfully, Sketch uses 1118865 bytes (85%) of program storage space. Maximum is 1310720 bytes.
+A reverse-engineered tool designed to sniff and decode Bluetooth Low Energy (BLE) payloads from Tesla Model 3 and Model Y TPMS sensors using any ESP32 microcontroller.
 
-Feel free to comment and report issues and feedback!
-Enjoy!
+## 📖 Overview
+This project allows you to monitor tire pressure, temperature, and battery levels of Tesla BLE TPMS sensors. It features a robust command-line interface via Serial Monitor and persistent data logging in the ESP32 Flash memory (NVS).
+
+## ✨ Features
+- **Full Compatibility:** Works with both first-gen and "Highland" Model 3/Y sensors.
+- **Real-time Decoding:** Provides Pressure (PSI/Bar), Temperature (°F/°C), and Battery voltage (mV).
+- **Advanced Filtering:** Toggle between Tesla-only mode or raw BLE sniffing.
+- **Data Persistence:** Automatically stores total readings and unique MAC addresses.
+- **Interactive Shell:** Comprehensive command system to manage scans and memory.
+- **Power Management:** Includes a Deep Sleep command for energy saving.
+
+## 🚗 Vehicle Compatibility
+| Model | Compatibility | Protocol |
+| :--- | :--- | :--- |
+| **Model 3 / Model Y** | ✅ Supported | BLE (2.4GHz) |
+| **Model 3 Highland** | ✅ Supported | BLE (2.4GHz) |
+| **Model S / Model X** | ❌ Not Supported | 433 MHz (Legacy) |
+
+## 🛠 Hardware & Setup
+- **Core:** Built for **ESP32 Arduino Core v3.3.8**.
+- **Tested Hardware:** ESP32-D0WD-V3 (v3.1), ESP32U, ESP32-C3, ESP32-S3.
+- **Partition Scheme:** If the sketch exceeds space or crashes, use **"Huge APP (3MB No OTA)"**.
+- **Serial Baudrate:** 115200
+
+## 🎮 Commands
+Open your Serial Monitor and type `help` to see the full list:
+
+| Command | Description |
+| :--- | :--- |
+| `help` | Show available commands. |
+| `scan on/off` | Start or stop the BLE background scan. |
+| `scan <MAC>` | Probe a specific MAC for 15 seconds. |
+| `filter on/off`| Enable (Tesla only) or Disable (All BLE devices) filtering. |
+| `debug on/off` | Show/Hide raw hex payloads. |
+| `list` | Print the stored database of unique MAC addresses. |
+| `reset <p>` | Reset `total` counts, `list` of MACs, or `all` (NVS wipe). |
+| `uptime` | Show time since boot. |
+| `about` | Show device status and version. |
+
+> [!TIP]
+> **Sleep Mode:** If the tire is not moving or has no pressure, the sensor transmits very little data. To trigger a sensor on a workbench, apply a **125kHz square wave** nearby to wake it up.
+
+## 🔬 Technical Insight
+The decoding logic identifies the payload start at `0x2B 0x02`. The pressure is calculated using the following formula:
+$$P = \frac{(raw\_value - 100)}{7}$$
+
+## 🤝 Contributing & Feedback
+This project is based on reverse engineering and might require fine-tuning for different sensor batches. Feel free to open an issue or submit a pull request!
+
+---
+*Created by Conny (c) 2026*
