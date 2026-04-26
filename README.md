@@ -9,7 +9,7 @@ A reverse-engineered tool designed to sniff and decode Bluetooth Low Energy (BLE
 This project allows you to monitor tire pressure, temperature, and battery levels of Tesla BLE TPMS sensors. It features a robust command-line interface via Serial Monitor and persistent data logging in the ESP32 Flash memory (NVS).
 
 ## ✨ Features
-- **Full Compatibility:** Works with both first-gen and "Highland" Model 3/Y sensors.
+- **Full Compatibility:** Works with both first-gen and "Highland" Model 3/Y sensors and last-gen MS and MX.
 - **Real-time Decoding:** Provides Pressure (PSI/Bar), Temperature (°F/°C), and Battery voltage (mV).
 - **Advanced Filtering:** Toggle between Tesla-only mode or raw BLE sniffing.
 - **Data Persistence:** Automatically stores total readings and unique MAC addresses.
@@ -21,7 +21,9 @@ This project allows you to monitor tire pressure, temperature, and battery level
 | :--- | :--- | :--- |
 | **Model 3 / Model Y** | ✅ Supported | BLE (2.4GHz) |
 | **M3 2024+/ MY 2025+** | ✅ Supported | BLE (2.4GHz) |
-| **Model S / Model X** | ❌ Not Supported | 433 MHz (Legacy) |
+| **MS 2020+/ MX 2021+** | ✅ Supported | BLE (2.4GHz) |
+| **Legacy Model S / Model X** | ❌ Not Supported | 433 MHz (Legacy) |
+
 
 ## 🛠 Hardware & Setup
 - **Core:** Built for **ESP32 Arduino Core v3.3.8**.
